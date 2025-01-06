@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 import pandas as pd
+from markupsafe import Markup
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -16,7 +17,19 @@ tfidf = pickle.load(open('static/tfidf_model.pkl', 'rb'))
 
 def fetch_track(uri):
     return f"""<iframe src="https://open.spotify.com/embed/track/{uri}" width="260" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>"""
-
+def highlight_keyword(text, keyword):
+    # Escaping special characters in keyword
+    import re
+    escaped_keyword = re.escape(keyword)
+    
+    # Replace keyword in text with highlighted version
+    highlighted = re.sub(
+        f"({escaped_keyword})", 
+        r'<mark>\1</mark>', 
+        text, 
+        flags=re.IGNORECASE
+    )
+    return Markup(highlighted)  # Markup memastikan HTML aman untuk Flask
 def Reccomend(music):
     music_index = musics[musics['artis_judulLagu'] == music].index[0]
     distances = similarity[music_index]
@@ -60,6 +73,7 @@ def SearchEngine(query, top_n=5):
         song_info = {
             'artis_judulLagu': musics.iloc[index]['artis_judulLagu'],
             'track': fetch_track(musics.iloc[index]['uri']),
+            'snippet': highlight_keyword(musics.iloc[index]['Label'],query),
             'similarity' : 100  
         }
         results.append(song_info)
