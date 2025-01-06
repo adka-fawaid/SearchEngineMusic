@@ -86,6 +86,8 @@
               </h3>
               <p>Skor Kesamaan: {{ result.similarity}} %</p>
               <div>{{ result.track | safe }}</div>
+              <p><strong>Lirik Lagu:</strong></p>
+              <p> {{ result.snippet}} </p>
             </div>
             {% endfor %}
           </div>
